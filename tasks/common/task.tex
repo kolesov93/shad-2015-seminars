@@ -11,10 +11,16 @@
 
 \usepackage{tikz}
 \usetikzlibrary{arrows}
-
-\DeclareMathOperator{\prev}{prev}
+\usetikzlibrary{trees,shapes,decorations}
 
 \input{exam_russification.tex}
+
+\DeclareMathOperator{\prev}{prev}
+\renewcommand{\O}[1]{\mathcal{O}(#1)}
+\renewcommand{\o}[1]{\overline{o}(#1)}
+\usepackage{mathtools}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
 
 \begin{document}
 
@@ -186,6 +192,181 @@ $i$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
 \item Заведём два указателя. Один будет указывать на вершину $n+1$, другой на вершину через $l$ шагов от вершины $n+1$. Будем двигать эти указатели одновременно по шагу, пока они не станут указывать на одну и ту же вершину. Очевидно, что это и будет первая вершина цикла.
 
 \end{enumerate}
+
+\end{solution}
+
+\section{Структуры данных}
+
+\question Предложить реализацию очереди, используя стурктуру данных стек. Разрешается использовать $\mathcal{O}(1)$ стеков и $\mathcal{O}(1)$ дополнительной памяти. Стек имеет две операции (<<push>> и <<pop>>), очередь тоже.
+
+\begin{parts}
+
+\part[\half] Амортизированная стоимость операций должна быть $\O{1}$
+
+\part[2] Стоимость операций должна быть $\O{1}$ в худшем случае
+
+\end{parts}
+
+\begin{solution}
+
+Для решения первой части можно использовать известную конструкцию из двух стеков, назовём их $A$ и $B$. При выполнении операции <<push>> будем добавлять элемент в стек $B$. При выполнении <<pull>>~--- достаем из стека $A$. Если же стек $A$ пуст, то просто перекладываем все элементы из стека $B$ в стек $A$. Легко показать, что тогда выполняется FIFO. Каждый элемент не более одного раза добавляется и достаётся из каждого из двух стеков.
+
+Решение второго пункта довольно большое, описание его можно найти вот тут \url{http://goo.gl/VjEYxL}
+
+\end{solution}
+
+\question Предложить реализацию стека, используя стурктуру данных очередь. Стек имеет две операции (<<push>> и <<pop>>), очередь тоже. За $n$ будем считать максимальное количество элементов, которые могут находится в стеке в одно время.
+
+\begin{parts}
+
+\part[\half] Разрешается использовать $\O{n}$ дополнительной памяти
+
+\part[\half] Стоимость операции <<push>> должна быть $\O{n}$, а <<pop>>~--- $\O{1}$. Дополнительной памяти~--- $\O{1}$
+
+\part[\half] Стоимость операции <<pop>> должна быть $\O{n}$, а <<push>>~--- $\O{1}$
+
+\part[2] (Амортизированная) Стоимость обеих операций должна быть $\o{n}$
+
+\end{parts}
+
+\begin{solution}
+
+В первом пункте просто заведём стек в дополнительной памяти.
+
+Будем реализовывать стек на одной очереди. Будем поддерживать в этой очереди порядок LIFO. Если надо забрать элемент, то просто заберём элемент из очереди. Если вставить, то поступим следующим образом. Запомним сколько элементов в очереди до добавления, пусть $m$. Добавим новый элемент в очередь. Затем сделаем $m$ раз связку <<pull>>-<<push>>, тем самым выведя новый элемент на первое место, а все остальные оставив за ним. На рисунке элементы пронумерованы в порядке добавления в структуру.
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline 
+Промежуточное состояние структуры &  
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,
+  thick,main node/.style={fill=white!20,draw,font=\sffamily\Large\bfseries}]
+
+  \node[main node] (1) {4};
+  \node[main node] (2) [right of=1] {3};
+  \node[main node] (3) [right of=2] {2};
+  \node[main node] (4) [right of=3] {1};
+  
+  \path[every node/.style={font=\sffamily\small}]
+    (2) edge node [left] {} (1)
+    (3) edge node [left] {} (2)
+    (4) edge node [left] {} (3)
+       ;
+\end{tikzpicture}
+\\ 
+\hline 
+<<pull>> & 
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,
+  thick,main node/.style={fill=white!20,draw,font=\sffamily\Large\bfseries}]
+
+  \node[main node, -, cross out, draw=red] (1) {4};
+  \node[main node] (2) [right of=1] {3};
+  \node[main node] (3) [right of=2] {2};
+  \node[main node] (4) [right of=3] {1};
+  
+  \path[every node/.style={font=\sffamily\small}]
+    (3) edge node [left] {} (2)
+    (4) edge node [left] {} (3)
+       ;
+\end{tikzpicture}
+\\
+\hline
+После <<pull>> & 
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,
+  thick,main node/.style={fill=white!20,draw,font=\sffamily\Large\bfseries}]
+
+  \node[main node] (2) [right of=1] {4};
+  \node[main node] (3) [right of=2] {3};
+  \node[main node] (4) [right of=3] {2};
+  
+  \path[every node/.style={font=\sffamily\small}]
+    (3) edge node [left] {} (2)
+    (4) edge node [left] {} (3)
+       ;
+\end{tikzpicture}
+\\
+\hline
+Добавление элемента & 
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,
+  thick,main node/.style={fill=white!20,draw,font=\sffamily\Large\bfseries}]
+
+  \node[main node] (2) [] {4};
+  \node[main node] (3) [right of=2] {3};
+  \node[main node] (4) [right of=3] {2};
+  \node[main node, fill=green!] (5) [right of=4] {5};
+  
+  \path[every node/.style={font=\sffamily\small}]
+    (3) edge node [left] {} (2)
+    (4) edge node [left] {} (3)
+    (5) edge node [left] {} (4)
+       ;
+\end{tikzpicture}
+\\
+\hline
+<<pull>>-<<push>> & 
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,
+  thick,main node/.style={fill=white!20,draw,font=\sffamily\Large\bfseries}]
+
+  \node[main node] (3) [] {3};
+  \node[main node] (4) [right of=3] {2};
+  \node[main node, fill=green!] (5) [right of=4] {5};
+  \node[main node] (2) [right of=5] {4};  
+  
+  \path[every node/.style={font=\sffamily\small}]
+    (4) edge node [left] {} (3)
+    (5) edge node [left] {} (4)
+    (2) edge node [left] {} (5)
+       ;
+\end{tikzpicture}
+\\
+\hline  
+<<pull>>-<<push>> & 
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,
+  thick,main node/.style={fill=white!20,draw,font=\sffamily\Large\bfseries}]
+
+  \node[main node] (4) [] {2};
+  \node[main node, fill=green!] (5) [right of=4] {5};
+  \node[main node] (2) [right of=5] {4};  
+  \node[main node] (3) [right of=2] {3};  
+  
+  \path[every node/.style={font=\sffamily\small}]
+    (3) edge node [left] {} (2)
+    (5) edge node [left] {} (4)
+    (2) edge node [left] {} (5)
+       ;
+\end{tikzpicture}
+\\
+\hline
+<<pull>>-<<push>> & 
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,
+  thick,main node/.style={fill=white!20,draw,font=\sffamily\Large\bfseries}]
+
+  \node[main node, fill=green!] (5) [] {5};
+  \node[main node] (2) [right of=5] {4};  
+  \node[main node] (3) [right of=2] {3};  
+  \node[main node] (4) [right of=3] {2};
+  
+  \path[every node/.style={font=\sffamily\small}]
+    (3) edge node [left] {} (2)
+    (2) edge node [left] {} (5)
+    (4) edge node [left] {} (3)
+       ;
+\end{tikzpicture}
+\\
+\hline
+\end{tabular} 
+\end{center}
+
+Понятно, что можно при операции <<push>> просто добавлять элемент в очередь, а при <<pop>> делать серию <<pull>>-<<push>> дабы вывести самый последний элемент на первое место.
+
+Приступим к интересной части. Реализуем операцию <<push>> за $\o{1}$ и <<pull>> за амортизированную оценку $\O{sqrt{n}}$. Заведём две очереди: $A$ и $B$. В первой будем хранить $\approx \sqrt{n}$ элементов самых близких к вершине стека (т.е. добавленных позже всего). Хранить их, однако, будем в порядке очереди (иначе сложность, вероятно, бы возрасла опять до $\O(n)$). При операции <<push>> просто добавляем элемент в очередь $A$. Если $|A|^2 > |B|$ перекидываем элемент верхней элемент очереди $A$ в $B$. Понятно, что таких перекидываний на <<push>> надо сделать не больше одного.
+
+При операции <<pull>> серией <<pull>>-<<push>> очереди $B$ добиваемся, чтобы последний элемент стека оказался на вершине и возвращаем его. Заметим, что инвариант про $|A|^2 \leqslant |B|$ не нарушился.
+
+Если же очередь $A$ пуста, то необходимо переупорядочить элементы. Для этого переместим (B.pull~-A.push) $\floor{|B| - \sqrt{|B|}}$ элементов из очереди $B$ в очередь $A$ и просто переименуем очереди. Теперь инвариант выполняется.
+
+В качестве упражнения предлагается доказать, что амортизированная сложность операции <<pull>> составляет $\sqrt{n}$.
+
 
 \end{solution}
 
