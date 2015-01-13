@@ -5,7 +5,11 @@
 
 \newcommand{\scorenameraw}[1]{%
     \StrRight{#1}{1}[\lastdigit]%
-\ifthenelse{\equal{#1}{11}}{баллов}{\ifthenelse{\equal{#1}{12}}{баллов}{\ifthenelse{\equal{#1}{13}}{баллов}{\ifthenelse{\equal{#1}{14}}{баллов}{\ifthenelse{\equal{\lastdigit}{1}}{балл}{\ifthenelse{\equal{\lastdigit}{2}}{балла}{\ifthenelse{\equal{\lastdigit}{3}}{балла}{\ifthenelse{\equal{\lastdigit}{4}}{балла}{баллов}}}}}}}}}\newcommand{\scorename}[1]{\ignorespaces \scorenameraw{#1}}
+\ifthenelse{\equal{#1}{11}}{баллов}{\ifthenelse{\equal{#1}{12}}{баллов}{\ifthenelse{\equal{#1}{13}}{баллов}{\ifthenelse{\equal{#1}{14}}{баллов}{\ifthenelse{\equal{\lastdigit}{1}}{балл}{\ifthenelse{\equal{\lastdigit}{2}}{балла}{\ifthenelse{\equal{\lastdigit}{3}}{балла}{\ifthenelse{\equal{\lastdigit}{4}}{балла}
+{\ifthenelse{\equal{\lastdigit}{$}}{балла}
+{баллов}}}}}}}}}}
+
+\newcommand{\scorename}[1]{\ignorespaces \scorenameraw{#1}}
 \hqword{Задание}
 \hpword{Баллы}
 \htword{Сумма}

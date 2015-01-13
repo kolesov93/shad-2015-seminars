@@ -55,7 +55,244 @@
 
 \end{solution}
 
-\section{Ad-hoc}
+\section{Разное}
+
+\question[3] Дан массив из $n+1$ числа, в котором содержатся целые числа от $1$ до $n$ (какие-то числа могут отсутствовать). Необходимо найти любое такое $x$, что $x$ встречается в массиве как минимум дважды.
+
+\begin{solution}
+
+Рассмотрим граф из $n+1$ вершины, и дугами $i \rightarrow a_i$. В таком орграфе $n+1$ вершина и $n+1$ дуга, а значит он состоит только из циклов, каждая вершина которого~--- корень какого-нибудь корневого дерева.
+
+Например, исходный массив:
+
+\begin{center}
+
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+\hline 
+$a_i$ & 3 & 1 & 2 & 1 & 4 & 3 & 7 & 4 \\ 
+\hline 
+$i$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\ 
+\hline 
+\end{tabular} 
+
+\end{center}
+
+Породит следующий граф:
+
+\begin{center}
+
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,
+  thick,main node/.style={circle,fill=blue!20,draw,font=\sffamily\Large\bfseries}]
+
+  \node[main node, fill=green!] (1) {1};
+  \node[main node] (2) [right of=1] {2};
+  \node[main node] (3) [right of=2] {3};
+  \node[main node, fill=green!] (4) [right of=3] {4};
+  \node[main node] (5) [right of=4] {5};
+  \node[main node] (6) [right of=5] {6};
+  \node[main node] (7) [right of=6] {7};
+  \node[main node] (8) [right of=7] {8};	
+
+  \path[every node/.style={font=\sffamily\small}]
+    (1) edge [bend right] node[left] {} (3)
+    (2) edge node [left] {} (1)
+    (3) edge node [left] {} (2)
+    (4) edge [bend right] node[right] {} (1)
+	(5) edge [left] node {} (4)
+	(6) edge [loop below] node {} (6)
+	(7) edge [bend right] node {} (4)
+	(8) edge [bend left] node {} (4)
+       ;
+\end{tikzpicture}
+
+\end{center}
+
+Зелёным отмечены числа, которые подходят под ответ. Эти числа соответствуют вершинам, в которые входят больше одной дуги.
+
+Забудем на время про ориентацию дуг. Посмотрим на компоненту связности, в которой лежит вершина $n+1$. Очевидно, что в этой компоненте есть цикл (в компоненте $m$ вершин и $m$ рёбер). Однако, вершина $n+1$ на цикле лежать не может (в неё не входит ни одна дуга)~--- значит если мы встанём в неё и будем идти по дугам, то рано или поздно придём в цикл. Заметим, что первая вершина цикла, в которую мы попадём обязательно будет <<зелёной>>. Действительно, в неё входит как минимум одна дуга из цикла и та дуга, по которой мы пришли.
+
+Ну, теперь задача получилась простая. Надо встать в вершину $n+1$ и идти по дугам до цикла, а после найти первую вершину цикла. В данном случае можно сделать это так.
+
+\begin{enumerate}
+
+\item Сделаем от вершины $n+1$ ровно $n+1$ шаг. Пусть мы попали в вершину $x$. Очевидно, это вершина цикла (предпериод не может быть длинней $n+1$).
+
+\item Пойдём от вершины $x$ по дугам и будем считать количество шагов, пока опять не попадём в вершину $x$. Пусть это количество $l$. Заметим, что $l$~--- длина цикла. 
+
+\item Заведём два указателя. Один будет указывать на вершину $n+1$, другой на вершину через $l$ шагов от вершины $n+1$. Будем двигать эти указатели одновременно по шагу, пока они не станут указывать на одну и ту же вершину. Очевидно, что это и будет первая вершина цикла.
+
+\end{enumerate}
+
+\end{solution}
+
+
+\question[1] Дан отсортированный массив различных целых чисел. Надо определить, существует ли такой индекс $i$, что $a_i = i$. Сложность алгоритма должна быть $\O{\log{n}}$, где $n$~--- длина массива.
+
+\begin{solution}
+
+Так как числа целые и различные, то $a_i \geqslant a_{i - 1} + 1$. Рассмотрим функцию $f(i) = a_i - i$. Она неубывающая. Поэтому можно найти первую точку, где она не меньше нуля за $\O{\log{n}}$ с помощью бинарного поиска.
+
+\end{solution}
+
+\question[1 \half] Дан массив из $n = 2^k$ различных целых чисел. Необходимо определить 2-ю порядковую статистику за не более, чем $n + k - 2$ сравнения.
+
+\begin{solution}
+
+\tikzset{
+  treenode/.style = {align=center, inner sep=0pt, text centered,
+    font=\sffamily, circle, fill=white, font=\sffamily\bfseries, draw,
+     text width=1.5em},
+  best/.style = {treenode,  fill=green},
+  prebest/.style = {treenode, fill=yellow},
+  cand/.style = {treenode, fill=blue},
+}
+
+Заметим, что найти минимум в массиве из $n$ элементов можно только с помощью $n-1$ сравнения, причём, очевидно, меньше сделать нельзя.
+
+С другой стороны можно по разному использовать эти сравнения. Давайте будем поступать следующим образом. На первом шаге сравним элементы на первом и втором местах, затем на третьем и четвёртом и так за $n/2$ сравнений оставим ровно $n/2$ кандидатов на минимум. Будем повторять такую операцию, пока не останется ровно один элемент. Такую стратегию легко реализовать в виде дерева. К примеру, рассмотрим массив $(2,8,1,3,7,4,6,5)$:
+
+\begin{center}
+\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
+  level distance = 1.5cm}] 
+\node [treenode] {1}
+    child{ node [treenode] {1} 
+            child{ node [treenode] {2}
+              child { node[treenode] {2}}
+              child { node[treenode] {8}}
+            }
+            child{ node [treenode] {1}
+              child { node[treenode] {1}}
+              child { node[treenode] {3}}
+            }                             
+    }
+    child{ node [treenode] {4} 
+            child{ node [treenode] {4}
+              child { node[treenode] {7}}
+              child { node[treenode] {4}}
+            }
+            child{ node [treenode] {5}
+              child { node[treenode] {6}}
+              child { node[treenode] {5}}
+            }                             
+    }
+; 
+\end{tikzpicture}
+\end{center}
+
+Посмотрим, как минимум проложил себе путь наверх:
+
+\begin{center}
+\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
+  level distance = 1.5cm}] 
+\node [best] {1}
+    child{ node [best] {1} 
+            child{ node [treenode] {2}
+              child { node[treenode] {2}}
+              child { node[treenode] {8}}
+            }
+            child{ node [best] {1}
+              child { node[best] {1}}
+              child { node[treenode] {3}}
+            }                             
+    }
+    child{ node [treenode] {4} 
+            child{ node [treenode] {4}
+              child { node[treenode] {7}}
+              child { node[treenode] {4}}
+            }
+            child{ node [treenode] {5}
+              child { node[treenode] {6}}
+              child { node[treenode] {5}}
+            }                             
+    }
+; 
+
+\end{tikzpicture}
+\end{center}
+
+Очевидно, он выигрывал при каждом сравнении. Теперь заметим, что среди тех, у кого он выигрывал обязательно есть второй минимум. Действительно, второй минимум таким же образом шёл наверх, выигрывая всех, пока не встретился с минимумом:
+
+\begin{center}
+\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
+  level distance = 1.5cm}] 
+\node [best] {1}
+    child{ node [best] {1} 
+            child{ node [prebest] {2}
+              child { node[prebest] {2}}
+              child { node[treenode] {8}}
+            }
+            child{ node [best] {1}
+              child { node[best] {1}}
+              child { node[treenode] {3}}
+            }                             
+    }
+    child{ node [treenode] {4} 
+            child{ node [treenode] {4}
+              child { node[treenode] {7}}
+              child { node[treenode] {4}}
+            }
+            child{ node [treenode] {5}
+              child { node[treenode] {6}}
+              child { node[treenode] {5}}
+            }                             
+    }
+; 
+
+\end{tikzpicture}
+\end{center}
+
+Заметим, что всего элементов, которых мы сравнивали с минимумом ровно $k$~--- по одному на каждый уровень:
+
+\begin{center}
+\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
+  level distance = 1.5cm}] 
+\node [best] {1}
+    child{ node [best] {1} 
+            child{ node [cand] {2}
+              child { node[treenode] {2}}
+              child { node[treenode] {8}}
+            }
+            child{ node [best] {1}
+              child { node[best] {1}}
+              child { node[cand] {3}}
+            }                             
+    }
+    child{ node [cand] {4} 
+            child{ node [treenode] {4}
+              child { node[treenode] {7}}
+              child { node[treenode] {4}}
+            }
+            child{ node [treenode] {5}
+              child { node[treenode] {6}}
+              child { node[treenode] {5}}
+            }                             
+    }
+; 
+
+\end{tikzpicture}
+\end{center}
+
+А значит, из них мы можем найти минимум за $k-1$ сравнение. Таким образом нам нужно $n-1+k-1=n+k-2$ сравнения на всё.
+
+\end{solution}
+
+\question[1] Пусть мы имеем два положительные неубывающие функции $f(x)$ и $g(x)$, причём $f(n) = \O{g(n)}$. Правда, что $2^{f(n)} = \O(2^{g(n)})$? Если это может как выполняться, так и не выполняться, привидете примеры обоих случаев. Иначе докажите утверждение.
+
+\begin{solution}
+
+Иногда это выполнятся, например $f(n) = g(n)$. В частности, это правда, если $f(n) \leqslant g(n)$, при $n \to \infty$.
+
+С другой стороны, если, к примеру, $g(n) = 2f(n)$, то $2^{f(n)}$ и $2^{g(n)}$ отличаются уже не в константу раз.
+
+\end{solution}
+
+\question[\half] Пусть у нас есть $k$ отсортированных последовательностей из $n$ чисел каждая. Предлагается такой алгоритм слияния их в одну: сначала сольём две первых последовательности, затем результат с третьей, и так далее. Какова сложность полученного алгоритма? Считаем, что слияние двух массивов происходит за их суммарную длину. Какова сложность полученного алгоритма.
+
+\begin{solution}
+
+$$\sum\limits_{i=1}^{k-1} {n + in} = n \sum\limits_{i=1}^{k-1} {i + 1} = \O{n k^2}$$
+
+\end{solution}
 
 \question Дана матрица размером $n \times m$. Каждый элемент матрицы равен либо единице, либо нулю. Нужно преобразовать матрицу таким образом, чтоб элемент $a_{i,j}$ был равен $1$ тогда и только тогда, когда в строке $i$ есть хотя бы одна единица или в столбце $j$ есть хотя бы одна единица. 
 
@@ -127,73 +364,6 @@
 
 \end{solution}
 
-\question[3] Дан массив из $n+1$ числа, в котором содержатся целые числа от $1$ до $n$ (какие-то числа могут отсутствовать). Необходимо найти любое такое $x$, что $x$ встречается в массиве как минимум дважды.
-
-\begin{solution}
-
-Рассмотрим граф из $n+1$ вершины, и дугами $i \rightarrow a_i$. В таком орграфе $n+1$ вершина и $n+1$ дуга, а значит он состоит только из циклов, каждая вершина которого~--- корень какого-нибудь корневого дерева.
-
-Например, исходный массив:
-
-\begin{center}
-
-\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
-\hline 
-$a_i$ & 3 & 1 & 2 & 1 & 4 & 3 & 7 & 4 \\ 
-\hline 
-$i$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\ 
-\hline 
-\end{tabular} 
-
-\end{center}
-
-Породит следующий граф:
-
-\begin{center}
-
-\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2cm,
-  thick,main node/.style={circle,fill=blue!20,draw,font=\sffamily\Large\bfseries}]
-
-  \node[main node, fill=green!] (1) {1};
-  \node[main node] (2) [right of=1] {2};
-  \node[main node] (3) [right of=2] {3};
-  \node[main node, fill=green!] (4) [right of=3] {4};
-  \node[main node] (5) [right of=4] {5};
-  \node[main node] (6) [right of=5] {6};
-  \node[main node] (7) [right of=6] {7};
-  \node[main node] (8) [right of=7] {8};	
-
-  \path[every node/.style={font=\sffamily\small}]
-    (1) edge [bend right] node[left] {} (3)
-    (2) edge node [left] {} (1)
-    (3) edge node [left] {} (2)
-    (4) edge [bend right] node[right] {} (1)
-	(5) edge [left] node {} (4)
-	(6) edge [loop below] node {} (6)
-	(7) edge [bend right] node {} (4)
-	(8) edge [bend left] node {} (4)
-       ;
-\end{tikzpicture}
-
-\end{center}
-
-Зелёным отмечены числа, которые подходят под ответ. Эти числа соответствуют вершинам, в которые входят больше одной дуги.
-
-Забудем на время про ориентацию дуг. Посмотрим на компоненту связности, в которой лежит вершина $n+1$. Очевидно, что в этой компоненте есть цикл (в компоненте $m$ вершин и $m$ рёбер). Однако, вершина $n+1$ на цикле лежать не может (в неё не входит ни одна дуга)~--- значит если мы встанём в неё и будем идти по дугам, то рано или поздно придём в цикл. Заметим, что первая вершина цикла, в которую мы попадём обязательно будет <<зелёной>>. Действительно, в неё входит как минимум одна дуга из цикла и та дуга, по которой мы пришли.
-
-Ну, теперь задача получилась простая. Надо встать в вершину $n+1$ и идти по дугам до цикла, а после найти первую вершину цикла. В данном случае можно сделать это так.
-
-\begin{enumerate}
-
-\item Сделаем от вершины $n+1$ ровно $n+1$ шаг. Пусть мы попали в вершину $x$. Очевидно, это вершина цикла (предпериод не может быть длинней $n+1$).
-
-\item Пойдём от вершины $x$ по дугам и будем считать количество шагов, пока опять не попадём в вершину $x$. Пусть это количество $l$. Заметим, что $l$~--- длина цикла. 
-
-\item Заведём два указателя. Один будет указывать на вершину $n+1$, другой на вершину через $l$ шагов от вершины $n+1$. Будем двигать эти указатели одновременно по шагу, пока они не станут указывать на одну и ту же вершину. Очевидно, что это и будет первая вершина цикла.
-
-\end{enumerate}
-
-\end{solution}
 
 \section{Структуры данных}
 
