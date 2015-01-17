@@ -1,0 +1,217 @@
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usetheme{Warsaw}
+\subtitle[Алгоритмы и структуры данных поиска]{Алгоритмы и структуры данных поиска}
+\title[Pattern matching]{Pattern matching}
+\author{Алексей Колесов}
+\institute{ШАД 2015. Минск}
+\date{26 декабря, 2014}
+
+\theoremstyle{definition}
+\newtheorem{mydef}[theorem]{Определение}
+
+\usepackage{listings}
+\usepackage{xcolor, soul, tikz, verbatim}
+\usepackage{lstlinebgrd}
+\lstset { %
+    language=C++,
+    backgroundcolor=\color{blue!5}, % set backgroundcolor
+    basicstyle=\footnotesize,% basic font setting
+    numbers=left,
+    frame=single,
+    captionpos=b,
+    keywordstyle=\color{blue}\textbf,
+    morekeywords={vector, string, size_t},
+    escapeinside={(*@}{@*)},
+    moredelim=**[is][\btHL]{`}{`}
+}
+\renewcommand{\lstlistingname}{Листинг}
+
+%\setbeameroption{show notes}
+
+\makeatletter
+\newenvironment{btHighlight}[1][]
+{\begingroup\tikzset{bt@Highlight@par/.style={#1}}\begin{lrbox}{\@tempboxa}}
+{\end{lrbox}\bt@HL@box[bt@Highlight@par]{\@tempboxa}\endgroup}
+
+\newcommand\btHL[1][]{%
+  \begin{btHighlight}[#1]\bgroup\aftergroup\bt@HL@endenv%
+}
+\def\bt@HL@endenv{%
+  \end{btHighlight}%   
+  \egroup
+}
+\newcommand{\bt@HL@box}[2][]{%
+  \tikz[#1]{%
+    \pgfpathrectangle{\pgfpoint{1pt}{0pt}}{\pgfpoint{\wd #2}{\ht #2}}%
+    \pgfusepath{use as bounding box}%
+    \node[anchor=base west, fill=orange!30,outer sep=0pt,inner xsep=1pt, inner ysep=0pt, rounded corners=3pt, minimum height=\ht\strutbox+1pt,#1]{\raisebox{1pt}{\strut}\strut\usebox{#2}};
+  }%
+}
+\makeatother
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Содержание}
+\tableofcontents[currentsection]
+\end{frame}
+
+\section{z-алгоритм}
+\subsection{Определения}
+
+\begin{frame}{z-блок}
+
+\begin{mydef}
+Будем называть \alert{z-блоком} пару $(l, r)$ в случае если подстрока $s[l \ldots r)$ совпадает с префиксом строки $s$. 
+\end{mydef}
+
+\begin{exampleblock} {Примеры z-блоков}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline 
+a & b & a & c & a & b & a \\ 
+\hline 
+0 & 1 & 2 & 3 & 4 & 5 & 6 \\ 
+\hline 
+\end{tabular} 
+\end{center}
+
+Например, для строки \texttt{<<abacaba>>} z-блоками будут являться пары $(0, 5)$, $(4,7)$, $(2,3)$ и другие.
+\end{exampleblock}
+
+\end{frame}
+
+\begin{frame}{z-функция}
+
+\begin{mydef}
+\alert{z-функция} $z[i]$ ~--- длина максимального $z$-блока, который начинается в символе $i$. 
+\end{mydef}
+
+\begin{alertblock}{Нулевой символ}
+Согласно определению, $z[0] = |s|$. Однако, для удобства реализации, рассуждений и причин, коих вам пока не дано понять, будем считать, что $z[0]$ равно котику.
+\end{alertblock}
+
+\begin{exampleblock}{Пример}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline 
+a & b & a & c & a & b & a \\ 
+\hline 
+\includegraphics[scale=0.06]{cat.png} & 0 & 1 & 0 & 3 & 0 & 1 \\ 
+\hline 
+\end{tabular} 
+\end{center}
+\end{exampleblock}
+
+\begin{center}
+
+\end{center}
+
+\end{frame}
+
+\subsection{Реализация}
+
+\begin{frame}[fragile]{Лобовая реализация}
+
+\begin{lstlisting}[
+	basicstyle=\tiny, 
+	caption=Лобовая реализация Z-алгоритма]
+vector<size_t> calculate_z(const string& s) {
+    vector<size_t> z(s.size());  
+
+    size_t left = 0, right = 0;
+    for (size_t i = 1; i < z.size(); ++i) {
+        if (right <= i) {     
+            left = right = i;
+            while(right < s.size() && s[right] == s[right-left]) ++right;
+            z[i] = right - left;
+        } else {
+            if (z[i - left] < right - i) {
+                z[i] = z[i - left];
+                continue;
+            }
+            z[i] = right - i;
+            while (i + z[i] < s.size() && s[i + z[i]] == s[z[i]]) {
+                ++z[i];
+            }
+            if (i + z[i] > right) {
+                left = i;
+                right = i + z[i];
+            }
+        }
+    }
+
+    return z;
+}
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Чуть лучше}
+
+\begin{lstlisting}[
+	basicstyle=\tiny, 
+	caption=Чуть улучшенная реализация Z-алгоритма]
+vector<size_t> calculate_z(const string& s) {
+    vector<size_t> z(s.size());
+
+    size_t left = 0, right = 0;
+    for (size_t i = 1; i < z.size(); ++i) {
+        if (right <= i) {
+            left = right = i;
+            while(right < s.size() && s[right] == s[right-left]) ++right;
+            z[i] = right - left;
+        } else {
+            z[i] = min(right - i, z[i - left]);
+            while (i + z[i] < s.size() && s[i + z[i]] == s[z[i]]) {
+                ++z[i];
+            }
+            if (i + z[i] > right) {
+                left = i;
+                right = i + z[i];
+            }
+        }
+    }
+
+    return z;
+}
+
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Приемлимая версия}
+
+\begin{lstlisting}[
+	basicstyle=\tiny, 
+	caption=Реализация Z-алгоритма]
+vector<size_t> calculate_z(const string& s) {
+    vector<size_t> z(s.size());
+
+    size_t left = 0, right = 0;
+    for (size_t i = 1; i < z.size(); ++i) {
+        if (i < right) {
+            z[i] = min(right - i, z[i - left]);
+        }
+        while (i + z[i] < s.size() && s[i + z[i]] == s[z[i]]) ++z[i];
+        if (i + z[i] > right) {
+            left = i;
+            right = i + z[i];
+        }
+    }
+
+    return z;
+}
+
+
+\end{lstlisting}
+
+\end{frame}
+
+\end{document}
