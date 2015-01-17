@@ -1,0 +1,12 @@
+Draft
+
+1. Hash-functions
+2. KMP, z-algorithm
+3. Suffix tree
+4. Suffix automata
+5. Grammars
+6. Graphs
+7. Graphs
+8. Graphs
+9. Graphs
+10. Graphs
