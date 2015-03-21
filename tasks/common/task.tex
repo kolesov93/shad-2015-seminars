@@ -13,36 +13,13 @@
 
 \begin{document}
 
-\printanswers
+%\printanswers
 \maketitle
 
 \begin{questions}
 
 \section{Динамическое программирование}
 
-\question[1] На прямой своими координатами задано $n$ точек. В этих точках расположеные гвоздики. Два гвоздика, находящихся в позициях $x_i$ и $x_j$ можно соединить ниткой длиной $|x_i - x_j|$ саженей. Необходимо натянуть нитки между гвоздями таким образом, чтоб к каждому гвоздю была присоединена как минимум одна нитка, а суммарная длина нитей была минимальна. Сложность алгоритма должна составлять $\mathcal{O}( n \log n)$.
-
-\begin{solution}
-
-Отсортируем все гвоздики по координате и будем считать, что они пронумерованы в порядке увеличения координаты. Очевидно, что гвоздик стоит соединять только с соседним гвоздём (иначе можно считать что рассматриваемый гвоздь соединён с промежуточным, а промежуточный~---  с изначальным соседом). Тогда введём величину $f_i$~--- ответ на задачу, если бы было задано только первых $i$ гвоздей. Тогда:
-
-\begin{center}
-\boxed{f_i = \min{(f_{i - 1}, f_{i - 2})} + |x_i - x_{i-1}|}
-\end{center}
-
-Последний гвоздь мы обязаны соединить с предпоследним. Мы выбираем из двух вариантов: первый соответствует случаю, когда мы соединяем гвоздь $i-1$ с гвоздём $i-2$, а второй~--- нет. Итого $\mathcal{O}(n \log{n})$ на сортировку и $\mathcal{O}(n)$ на вычисление ответа.
-
-\end{solution}
-
-\section{КМП}
-
-\question[1] Для каждой позиции строки $S$ вычислить значение $a_i$~--- длину максимальной подстроки, которая начинается в $i$ и совпадает с некоторым суффиксом строки $S$. Решение должно иметь сложность $\mathcal{O}(n)$
-
-\begin{solution}
-
-Развернём строку и посчитаем префикс-функцию. Если мы развернём обратно массив, содержащий значения префикс-функций, то можно заметить, что это и есть ответ на задачу.
-
-\end{solution}
 
 \section{Разное}
 
@@ -115,147 +92,6 @@ $i$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
 \end{solution}
 
 
-\question[1 \half] Дан массив из $n = 2^k$ различных целых чисел. Необходимо определить 2-ю порядковую статистику за не более, чем $n + k - 2$ сравнения.
-
-\begin{solution}
-
-\tikzset{
-  treenode/.style = {align=center, inner sep=0pt, text centered,
-    font=\sffamily, circle, fill=white, font=\sffamily\bfseries, draw,
-     text width=1.5em},
-  best/.style = {treenode,  fill=green},
-  prebest/.style = {treenode, fill=yellow},
-  cand/.style = {treenode, fill=blue},
-}
-
-Заметим, что найти минимум в массиве из $n$ элементов можно только с помощью $n-1$ сравнения, причём, очевидно, меньше сделать нельзя.
-
-С другой стороны можно по разному использовать эти сравнения. Давайте будем поступать следующим образом. На первом шаге сравним элементы на первом и втором местах, затем на третьем и четвёртом и так за $n/2$ сравнений оставим ровно $n/2$ кандидатов на минимум. Будем повторять такую операцию, пока не останется ровно один элемент. Такую стратегию легко реализовать в виде дерева. К примеру, рассмотрим массив $(2,8,1,3,7,4,6,5)$:
-
-\begin{center}
-\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
-  level distance = 1.5cm}] 
-\node [treenode] {1}
-    child{ node [treenode] {1} 
-            child{ node [treenode] {2}
-              child { node[treenode] {2}}
-              child { node[treenode] {8}}
-            }
-            child{ node [treenode] {1}
-              child { node[treenode] {1}}
-              child { node[treenode] {3}}
-            }                             
-    }
-    child{ node [treenode] {4} 
-            child{ node [treenode] {4}
-              child { node[treenode] {7}}
-              child { node[treenode] {4}}
-            }
-            child{ node [treenode] {5}
-              child { node[treenode] {6}}
-              child { node[treenode] {5}}
-            }                             
-    }
-; 
-\end{tikzpicture}
-\end{center}
-
-Посмотрим, как минимум проложил себе путь наверх:
-
-\begin{center}
-\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
-  level distance = 1.5cm}] 
-\node [best] {1}
-    child{ node [best] {1} 
-            child{ node [treenode] {2}
-              child { node[treenode] {2}}
-              child { node[treenode] {8}}
-            }
-            child{ node [best] {1}
-              child { node[best] {1}}
-              child { node[treenode] {3}}
-            }                             
-    }
-    child{ node [treenode] {4} 
-            child{ node [treenode] {4}
-              child { node[treenode] {7}}
-              child { node[treenode] {4}}
-            }
-            child{ node [treenode] {5}
-              child { node[treenode] {6}}
-              child { node[treenode] {5}}
-            }                             
-    }
-; 
-
-\end{tikzpicture}
-\end{center}
-
-Очевидно, он выигрывал при каждом сравнении. Теперь заметим, что среди тех, у кого он выигрывал обязательно есть второй минимум. Действительно, второй минимум таким же образом шёл наверх, выигрывая всех, пока не встретился с минимумом:
-
-\begin{center}
-\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
-  level distance = 1.5cm}] 
-\node [best] {1}
-    child{ node [best] {1} 
-            child{ node [prebest] {2}
-              child { node[prebest] {2}}
-              child { node[treenode] {8}}
-            }
-            child{ node [best] {1}
-              child { node[best] {1}}
-              child { node[treenode] {3}}
-            }                             
-    }
-    child{ node [treenode] {4} 
-            child{ node [treenode] {4}
-              child { node[treenode] {7}}
-              child { node[treenode] {4}}
-            }
-            child{ node [treenode] {5}
-              child { node[treenode] {6}}
-              child { node[treenode] {5}}
-            }                             
-    }
-; 
-
-\end{tikzpicture}
-\end{center}
-
-Заметим, что всего элементов, которых мы сравнивали с минимумом ровно $k$~--- по одному на каждый уровень:
-
-\begin{center}
-\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
-  level distance = 1.5cm}] 
-\node [best] {1}
-    child{ node [best] {1} 
-            child{ node [cand] {2}
-              child { node[treenode] {2}}
-              child { node[treenode] {8}}
-            }
-            child{ node [best] {1}
-              child { node[best] {1}}
-              child { node[cand] {3}}
-            }                             
-    }
-    child{ node [cand] {4} 
-            child{ node [treenode] {4}
-              child { node[treenode] {7}}
-              child { node[treenode] {4}}
-            }
-            child{ node [treenode] {5}
-              child { node[treenode] {6}}
-              child { node[treenode] {5}}
-            }                             
-    }
-; 
-
-\end{tikzpicture}
-\end{center}
-
-А значит, из них мы можем найти минимум за $k-1$ сравнение. Таким образом нам нужно $n-1+k-1=n+k-2$ сравнения на всё.
-
-\end{solution}
 
 
 \question Дана матрица размером $n \times m$. Каждый элемент матрицы равен либо единице, либо нулю. Нужно преобразовать матрицу таким образом, чтоб элемент $a_{i,j}$ был равен $1$ тогда и только тогда, когда в строке $i$ есть хотя бы одна единица или в столбце $j$ есть хотя бы одна единица. 
@@ -503,6 +339,149 @@ $i$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
 
 
 \end{solution}
+
+\question[1 \half] Дан массив из $n = 2^k$ различных целых чисел. Необходимо определить 2-ю порядковую статистику за не более, чем $n + k - 2$ сравнения.
+
+\begin{solution}
+
+\tikzset{
+  treenode/.style = {align=center, inner sep=0pt, text centered,
+    font=\sffamily, circle, fill=white, font=\sffamily\bfseries, draw,
+     text width=1.5em},
+  best/.style = {treenode,  fill=green},
+  prebest/.style = {treenode, fill=yellow},
+  cand/.style = {treenode, fill=blue},
+}
+
+Заметим, что найти минимум в массиве из $n$ элементов можно только с помощью $n-1$ сравнения, причём, очевидно, меньше сделать нельзя.
+
+С другой стороны можно по разному использовать эти сравнения. Давайте будем поступать следующим образом. На первом шаге сравним элементы на первом и втором местах, затем на третьем и четвёртом и так за $n/2$ сравнений оставим ровно $n/2$ кандидатов на минимум. Будем повторять такую операцию, пока не останется ровно один элемент. Такую стратегию легко реализовать в виде дерева. К примеру, рассмотрим массив $(2,8,1,3,7,4,6,5)$:
+
+\begin{center}
+\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
+  level distance = 1.5cm}] 
+\node [treenode] {1}
+    child{ node [treenode] {1} 
+            child{ node [treenode] {2}
+              child { node[treenode] {2}}
+              child { node[treenode] {8}}
+            }
+            child{ node [treenode] {1}
+              child { node[treenode] {1}}
+              child { node[treenode] {3}}
+            }                             
+    }
+    child{ node [treenode] {4} 
+            child{ node [treenode] {4}
+              child { node[treenode] {7}}
+              child { node[treenode] {4}}
+            }
+            child{ node [treenode] {5}
+              child { node[treenode] {6}}
+              child { node[treenode] {5}}
+            }                             
+    }
+; 
+\end{tikzpicture}
+\end{center}
+
+Посмотрим, как минимум проложил себе путь наверх:
+
+\begin{center}
+\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
+  level distance = 1.5cm}] 
+\node [best] {1}
+    child{ node [best] {1} 
+            child{ node [treenode] {2}
+              child { node[treenode] {2}}
+              child { node[treenode] {8}}
+            }
+            child{ node [best] {1}
+              child { node[best] {1}}
+              child { node[treenode] {3}}
+            }                             
+    }
+    child{ node [treenode] {4} 
+            child{ node [treenode] {4}
+              child { node[treenode] {7}}
+              child { node[treenode] {4}}
+            }
+            child{ node [treenode] {5}
+              child { node[treenode] {6}}
+              child { node[treenode] {5}}
+            }                             
+    }
+; 
+
+\end{tikzpicture}
+\end{center}
+
+Очевидно, он выигрывал при каждом сравнении. Теперь заметим, что среди тех, у кого он выигрывал обязательно есть второй минимум. Действительно, второй минимум таким же образом шёл наверх, выигрывая всех, пока не встретился с минимумом:
+
+\begin{center}
+\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
+  level distance = 1.5cm}] 
+\node [best] {1}
+    child{ node [best] {1} 
+            child{ node [prebest] {2}
+              child { node[prebest] {2}}
+              child { node[treenode] {8}}
+            }
+            child{ node [best] {1}
+              child { node[best] {1}}
+              child { node[treenode] {3}}
+            }                             
+    }
+    child{ node [treenode] {4} 
+            child{ node [treenode] {4}
+              child { node[treenode] {7}}
+              child { node[treenode] {4}}
+            }
+            child{ node [treenode] {5}
+              child { node[treenode] {6}}
+              child { node[treenode] {5}}
+            }                             
+    }
+; 
+
+\end{tikzpicture}
+\end{center}
+
+Заметим, что всего элементов, которых мы сравнивали с минимумом ровно $k$~--- по одному на каждый уровень:
+
+\begin{center}
+\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
+  level distance = 1.5cm}] 
+\node [best] {1}
+    child{ node [best] {1} 
+            child{ node [cand] {2}
+              child { node[treenode] {2}}
+              child { node[treenode] {8}}
+            }
+            child{ node [best] {1}
+              child { node[best] {1}}
+              child { node[cand] {3}}
+            }                             
+    }
+    child{ node [cand] {4} 
+            child{ node [treenode] {4}
+              child { node[treenode] {7}}
+              child { node[treenode] {4}}
+            }
+            child{ node [treenode] {5}
+              child { node[treenode] {6}}
+              child { node[treenode] {5}}
+            }                             
+    }
+; 
+
+\end{tikzpicture}
+\end{center}
+
+А значит, из них мы можем найти минимум за $k-1$ сравнение. Таким образом нам нужно $n-1+k-1=n+k-2$ сравнения на всё.
+
+\end{solution}
+
 
 \end{questions}
 

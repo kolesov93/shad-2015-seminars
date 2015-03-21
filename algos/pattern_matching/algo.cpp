@@ -96,20 +96,19 @@ int main() {
     cin >> s;
 
     auto res1 = calculate_z_function_v1(s);
-    auto res2 = calculate_z_function_v2(s);
-    auto res3 = calculate_z_function_v3(s);
+    auto res2 = calculate_prefix_function(s);
+    int sum1 = 0, sum2 = 0;
     for (const auto x : res1) {
         cout << x << " ";
+        sum1 += x;
     }
     cout << endl;
     for (const auto x : res2) {
         cout << x << " ";
+        sum2 += x;
     }
     cout << endl;
-    for (const auto x : res3) {
-        cout << x << " ";
-    }
-    cout << endl;
+    cout << "z: " << sum1 << " prefix: " << sum2 << endl;
 
     return 0;
 }
