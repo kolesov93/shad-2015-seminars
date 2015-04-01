@@ -18,8 +18,19 @@
 
 \begin{questions}
 
-\section{Динамическое программирование}
+\section{Графы}
 
+\section{Безысходность}
+
+В одной очень доброй стране есть $n$ горных шахт, в которых пока нет выходов наружу. Между некоторыми шахтами уже прорыты туннели, по которым можно проходить в обе стороны.
+
+В стране часто случаются очень добрые землетрясения. Их доброта заключается в том, что они рушат не более одной шахты (возможно вообще не рушат). После разрушения становятся непригодными и все туннели, которые начинаются/заканчиваются в данной шахте.
+
+Профсоюз шахтёров таки выбил поправку в законе стране, которая позволила рабочим выходить на свет. Посему правительство должно построить лифты из некоторых станций наружу. Более того, поправка утверждает, что после любого землетрясения шахтёры из любой неразрушенной шахты должны иметь возможность по исправным туннелям добраться до лифта.
+
+Вы как очень добрый член правительства должны выбрать, в каких шахтах построить лифты. Но ваша забота о государстве превыше всего, а значит количество лифтов в вашем плане должно быть минимально возможным, чтоб удовлетворить всем условиям.
+
+Решите эту задачу за $\mathcal{O}(n + m)$
 
 \section{Разное}
 
@@ -92,8 +103,6 @@ $i$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
 \end{solution}
 
 
-
-
 \question Дана матрица размером $n \times m$. Каждый элемент матрицы равен либо единице, либо нулю. Нужно преобразовать матрицу таким образом, чтоб элемент $a_{i,j}$ был равен $1$ тогда и только тогда, когда в строке $i$ есть хотя бы одна единица или в столбце $j$ есть хотя бы одна единица. 
 
 \begin{parts}
@@ -122,6 +131,8 @@ $i$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
 Теперь пройдёмся по первой строке и если встречаем единицу, то заполняем весь встреченный столбец единицами. Если мы изначально запомнили, что первая строка содеражала хотя бы одну единицу, то заполняем единицами всю строку. Полученная матрица~--- искомая.
 
 \end{solution}
+
+
 
 \question[\half] Дан массив, где \textbf{к}аждое число, кроме одного, повторяет\textbf{с}я два раза, а одно число~--- встречается только \textbf{о}дин раз. Надо найти это число за $1$ п\textbf{р}оход по массиву и $\mathcal{O}(1)$ дополнительной памяти.
 
@@ -340,147 +351,6 @@ $i$ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
 
 \end{solution}
 
-\question[1 \half] Дан массив из $n = 2^k$ различных целых чисел. Необходимо определить 2-ю порядковую статистику за не более, чем $n + k - 2$ сравнения.
-
-\begin{solution}
-
-\tikzset{
-  treenode/.style = {align=center, inner sep=0pt, text centered,
-    font=\sffamily, circle, fill=white, font=\sffamily\bfseries, draw,
-     text width=1.5em},
-  best/.style = {treenode,  fill=green},
-  prebest/.style = {treenode, fill=yellow},
-  cand/.style = {treenode, fill=blue},
-}
-
-Заметим, что найти минимум в массиве из $n$ элементов можно только с помощью $n-1$ сравнения, причём, очевидно, меньше сделать нельзя.
-
-С другой стороны можно по разному использовать эти сравнения. Давайте будем поступать следующим образом. На первом шаге сравним элементы на первом и втором местах, затем на третьем и четвёртом и так за $n/2$ сравнений оставим ровно $n/2$ кандидатов на минимум. Будем повторять такую операцию, пока не останется ровно один элемент. Такую стратегию легко реализовать в виде дерева. К примеру, рассмотрим массив $(2,8,1,3,7,4,6,5)$:
-
-\begin{center}
-\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
-  level distance = 1.5cm}] 
-\node [treenode] {1}
-    child{ node [treenode] {1} 
-            child{ node [treenode] {2}
-              child { node[treenode] {2}}
-              child { node[treenode] {8}}
-            }
-            child{ node [treenode] {1}
-              child { node[treenode] {1}}
-              child { node[treenode] {3}}
-            }                             
-    }
-    child{ node [treenode] {4} 
-            child{ node [treenode] {4}
-              child { node[treenode] {7}}
-              child { node[treenode] {4}}
-            }
-            child{ node [treenode] {5}
-              child { node[treenode] {6}}
-              child { node[treenode] {5}}
-            }                             
-    }
-; 
-\end{tikzpicture}
-\end{center}
-
-Посмотрим, как минимум проложил себе путь наверх:
-
-\begin{center}
-\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
-  level distance = 1.5cm}] 
-\node [best] {1}
-    child{ node [best] {1} 
-            child{ node [treenode] {2}
-              child { node[treenode] {2}}
-              child { node[treenode] {8}}
-            }
-            child{ node [best] {1}
-              child { node[best] {1}}
-              child { node[treenode] {3}}
-            }                             
-    }
-    child{ node [treenode] {4} 
-            child{ node [treenode] {4}
-              child { node[treenode] {7}}
-              child { node[treenode] {4}}
-            }
-            child{ node [treenode] {5}
-              child { node[treenode] {6}}
-              child { node[treenode] {5}}
-            }                             
-    }
-; 
-
-\end{tikzpicture}
-\end{center}
-
-Очевидно, он выигрывал при каждом сравнении. Теперь заметим, что среди тех, у кого он выигрывал обязательно есть второй минимум. Действительно, второй минимум таким же образом шёл наверх, выигрывая всех, пока не встретился с минимумом:
-
-\begin{center}
-\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
-  level distance = 1.5cm}] 
-\node [best] {1}
-    child{ node [best] {1} 
-            child{ node [prebest] {2}
-              child { node[prebest] {2}}
-              child { node[treenode] {8}}
-            }
-            child{ node [best] {1}
-              child { node[best] {1}}
-              child { node[treenode] {3}}
-            }                             
-    }
-    child{ node [treenode] {4} 
-            child{ node [treenode] {4}
-              child { node[treenode] {7}}
-              child { node[treenode] {4}}
-            }
-            child{ node [treenode] {5}
-              child { node[treenode] {6}}
-              child { node[treenode] {5}}
-            }                             
-    }
-; 
-
-\end{tikzpicture}
-\end{center}
-
-Заметим, что всего элементов, которых мы сравнивали с минимумом ровно $k$~--- по одному на каждый уровень:
-
-\begin{center}
-\begin{tikzpicture}[<-,>=stealth',level/.style={sibling distance = 5cm/#1,
-  level distance = 1.5cm}] 
-\node [best] {1}
-    child{ node [best] {1} 
-            child{ node [cand] {2}
-              child { node[treenode] {2}}
-              child { node[treenode] {8}}
-            }
-            child{ node [best] {1}
-              child { node[best] {1}}
-              child { node[cand] {3}}
-            }                             
-    }
-    child{ node [cand] {4} 
-            child{ node [treenode] {4}
-              child { node[treenode] {7}}
-              child { node[treenode] {4}}
-            }
-            child{ node [treenode] {5}
-              child { node[treenode] {6}}
-              child { node[treenode] {5}}
-            }                             
-    }
-; 
-
-\end{tikzpicture}
-\end{center}
-
-А значит, из них мы можем найти минимум за $k-1$ сравнение. Таким образом нам нужно $n-1+k-1=n+k-2$ сравнения на всё.
-
-\end{solution}
 
 
 \end{questions}
