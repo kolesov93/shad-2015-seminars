@@ -1,0 +1,211 @@
+\documentclass[addpoints]{exam}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage[OT1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+
+\newcommand{\var}[1]{{\ttfamily#1}}
+\title{Поиск в глубину}
+\author{Минский ШАД. Весна}
+
+\input{preamble.tex}
+
+\DeclareMathOperator{\ord}{ord}
+\DeclareMathOperator{\finished}{finished}
+\DeclareMathOperator{\swap}{swap}
+\DeclareMathOperator{\params}{params}
+
+\begin{document}
+
+%\printanswers
+\maketitle
+
+\section{Тематические задачи}
+
+\begin{questions}
+
+\question[1] \label{pablo} У малыша Пабло есть $n$ красок (пронумерованных от единицы до $n$) и большое желание раскрасить квадратный холст $n \times n$ клеток с помощью этих красок. Изначально холст пустой (все клетки имеют цвет ноль). На $i$-й день малыш выбирает краску под номером $c_i$, которую ещё не выбирал раньше, и закрашивает прямоугольник, состоящий из клеток $(x,y)$, где $l_i \leq x \leq r_i$, $d_i \leq y \leq u_i$. По полученному холсту восстановите любой возможный набор $(c_i,l_i,r_i,d_i,u_i)$, который порождает данный холст, за $\O{n^2 \log^2{n}}$.
+
+Например, для следующего холста ответ может быть таким: $((3,1,2,1,2), (1,1,2,1,2), (2,2,3,2,3)$:
+
+\begin{center}
+\begin{tikzpicture}
+\tikzset{square matrix/.style={
+    matrix of nodes,
+    column sep=-\pgflinewidth, row sep=-\pgflinewidth,
+    nodes={draw,
+      minimum height=#1,
+      anchor=center,
+      text width=#1,
+      align=center,
+      inner sep=0pt
+    },
+  },
+  square matrix/.default=0.7cm
+}
+
+
+\matrix[square matrix]
+{
+|[fill=red]|1 &|[fill=red]| 1 & 0 \\
+|[fill=red]| 1 &|[fill=yellow]| 2 &|[fill=yellow]| 2 \\
+0 &|[fill=yellow]| 2 &|[fill=yellow]| 2 \\
+};
+\end{tikzpicture}
+\end{center}
+
+\question[1] Рассмотрим следующий параметризированный вариант сортировки массива из $n$ чисел. Параметрами сортировки является $k$ упорядоченных пар $(a_i,b_i)$.
+
+\begin{algorithm}[H]
+  \caption{SuperSort}
+  \begin{algorithmic}[1]
+    \Function{SuperSort}{\var{A}, \var{params}}
+    \State $\finished \gets 1$ 
+    \For{$i=\overline{1,k}$}
+      \If{$A[\params[i].a] > A[\params[i].b]$}
+        \State $\finished \gets 0$
+        \State $\swap(A[\params[i].a],A[\params[i].b])$
+      \EndIf
+    \EndFor
+    
+    \If{$\finished = 0$}
+      \State \textbf{return} \var{SuperSort}(\var{A}, \var{params})
+    \Else
+      \State \textbf{return} \var{A}
+    \EndIf
+    
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+Ваша задача по числу $n$ и упорядоченному массиву $\params$ ответить, правда ли, что данная сортировка правильно будет работать для любого массива длины $n$. Сложность алгоритма должна быть линейной от размера входа.
+
+К примеру, если $n=3$, то, очевидно, сортировка с $\params = \{(1,2),(2,3)\}$ правильно отсортирует любой массив. Но при $n=5$, например, массив $A=(1,2,3,5,4)$ будет отсортирован неверно с помощью данных параметров.
+
+\question[1 \half] В одной стране есть $n$ министров и $m$ проектных документов, каждый из которых может быть либо принят, либо нет. Каждый министр обладает своим очень важным мнением по $k_i$ из этих документов, т.е. утверждает, что он должен быть либо принят, либо не принят. Знания министров достаточно ограничены, поэтому $1 \leqslant k_i \leqslant 4$ для любого $i$. 
+
+Зачастую случается спорная ситуация, к примеру, один министр хочет, чтоб проект $X$ был принят, а другой совершенно против этого. В таких случаях происходят споры, которые значительно затягивают работу правительства. А именно, эти $m$ проектных документов находятся на рассмотрении уже $10^{18}!$ триллионов лет.
+
+Но наконец сегодня настал день дедлайна, в который вам надо решить, какие проекты будут приняты, а какие нет. Но не все варианты удовлетворят министров. А именно, пусть $l_i$~--- количество проектных документов, которые решились так, как хочет того $i$-й министр. Тогда вариант признаётся удовлетворительным, если $l_i > \frac{k_i}{2}$ для любого $i$. Ваша задача: за время $\O{n+m}$ определить, существует ли вообще план, который удовлетворит всех министров.
+
+\question[1] \label{connectify} Дан ориентированный $(n,m)$-граф. Одна из его вершин выделена. Необходимо определить минимальное количество дуг, которое нужно добавить в граф, чтоб все вершины стали достижимы из выделенной, за $\O{n+m}$.
+
+\section{Задачи на повторение}
+
+\question[1] Дан массив $a$, причём $|a|=n$ и $a_i=\pm 1$. Массив называется хорошим, если любая его префиксная и суффиксная сумма неотрицательна. Надо найти самый длинный непрерывный подотрезок массива, который является хорошим.
+
+\question[1 \half] Из-за того, что $n \times m$ студентов минского ШАДа неважно написали контрольную, случился апокалипсис. Судить студентов будет малыш Голод, а умеет он либо подвергнуть голодной пытке, либо не подвергать голодной пытке. Студентов выстроили в $n$ рядов по $m$ человек в каждом. Голод знает, что некоторые из студентов минчане, а значит их дома всё равно накормят, т.е. чтобы Голод не решил, такие студенты всё равно останутся сытыми. Также Голод знает, что некоторые другие студенты живут в общаге, а значит они точно будут голодны, вне зависимости от исхода. А вот про остальных студентов Голод волен решить, будут они голодны или нет. Чтоб не показаться несправедливым, Голод хочет, чтоб в любом подквадрате $2 \times 2$ было поровну голодных и неголодных студентов. Подскажите малышу, сколько существует различных справедливых исходов существует. Два варианта считаются различными, если существует студент, который в одном варианте остался голодным, а в другом~--- нет. Сложность алгоритма должна составлять $\O{nm}$.
+
+К примеру, пусть $n=3$, $m=2$ и человек в правом верхнем углу из Минска, а человек в левом нижнем~--- из общаги:
+
+\begin{center}
+\begin{tikzpicture}
+\tikzset{square matrix/.style={
+    matrix of nodes,
+    column sep=-\pgflinewidth, row sep=-\pgflinewidth,
+    nodes={draw,
+      minimum height=#1,
+      anchor=center,
+      text width=#1,
+      align=center,
+      inner sep=0pt
+    },
+  },
+  square matrix/.default=0.7cm
+}
+
+
+\matrix[square matrix]
+{
+|[fill=green]| M & ?  \\
+? & ?  \\
+? & |[fill=blue]| O \\
+};
+\end{tikzpicture} 
+\end{center}
+
+Тогда всего есть два способа удовлетворить ограничение:
+
+\begin{table}[H]
+    \caption{Возможные варианты}
+    \begin{minipage}{.5\linewidth}
+      
+      \centering
+        \begin{tikzpicture}
+\tikzset{square matrix/.style={
+    matrix of nodes,
+    column sep=-\pgflinewidth, row sep=-\pgflinewidth,
+    nodes={draw,
+      minimum height=#1,
+      anchor=center,
+      text width=#1,
+      align=center,
+      inner sep=0pt
+    },
+  },
+  square matrix/.default=0.7cm
+}
+
+
+\matrix[square matrix]
+{
+|[fill=green]| + & |[fill=blue]| X  \\
+|[fill=green]| + & |[fill=blue]| X  \\
+|[fill=green]| + & |[fill=blue]| X  \\
+};
+\end{tikzpicture} 
+    \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+      \centering
+        
+        \begin{tikzpicture}
+\tikzset{square matrix/.style={
+    matrix of nodes,
+    column sep=-\pgflinewidth, row sep=-\pgflinewidth,
+    nodes={draw,
+      minimum height=#1,
+      anchor=center,
+      text width=#1,
+      align=center,
+      inner sep=0pt
+    },
+  },
+  square matrix/.default=0.7cm
+}
+
+
+\matrix[square matrix]
+{
+|[fill=green]| + & |[fill=blue]| X  \\
+|[fill=blue]| X & |[fill=green]| +  \\
+|[fill=green]| + & |[fill=blue]| X  \\
+};
+\end{tikzpicture}
+    \end{minipage} 
+\end{table}
+
+\section{Практические задачи}
+
+Ссылка на контест: \url{https://contest.yandex.ru/contest/1080/problems/}
+
+\question[1] Реализовать задачу \ref{pablo}.
+
+\question[1] Дан алфавит $\Sigma$, причём $|\Sigma| = n$. Дано число $k$. Надо выдать такую строку $S$ минимальной длины, что любой упорядоченный набор из $k$ символов алфавита встречается в $S$ как подстрока.
+
+\question[1] Реализовать задачу \ref{connectify}.
+
+\begin{center}
+\pointtable[h][questions]
+\end{center}
+
+\end{questions}
+
+\end{document}
